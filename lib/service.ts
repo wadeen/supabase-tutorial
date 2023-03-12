@@ -1,22 +1,24 @@
+import { useState } from "react";
 import supabase from "./supabase";
+import { Database } from "./supabase";
 
 const TABLE_NAME = "sample";
 
 // データの取得
-export const getList = async () => {
+
+// データの更新
+export const updateLunch = async ({ id, lunch, isDone }: Database) => {
   try {
-    const { data, error } = await supabase.from(TABLE_NAME).select("*").order("created_at");
-    if (error) throw new Error(error.message);
-    return data;
+    await supabase.from(TABLE_NAME).insert({ id, lunch, isDone });
   } catch (error) {
     console.error(error);
   }
 };
 
 // データの更新
-export const updateLunch = async ({ id, lunch, isDone }: any) => {
+export const removeLunch = async (id: number) => {
   try {
-    await supabase.from(TABLE_NAME).insert({ id, lunch, is_done: isDone });
+    await supabase.from(TABLE_NAME).delete().match({ id });
   } catch (error) {
     console.error(error);
   }
