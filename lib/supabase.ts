@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 
 export type Database = {
   id?: number;
-  lunch: string;
+  text: string;
   created_at?: string;
   isDone: boolean;
 };

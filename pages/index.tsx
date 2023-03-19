@@ -1,21 +1,35 @@
-import styles from "@/styles/Home.module.css";
 import supabase, { Database } from "@/lib/supabase";
-import { removeLunch, updateLunch } from "@/lib/service";
-import { useCallback, useEffect, useState } from "react";
-
-const TABLE_NAME = "sample";
+import { fetchDatabase, removeSupabaseData, addSupabaseData, TABLE_NAME } from "@/lib/supabaseFunc";
+import { useEffect, useState } from "react";
+import { useRealtimeData } from "@/hooks/useRealtimeData";
 
 export default function Home() {
   const [inputText, setInputText] = useState(""); // 入力テキスト
-  const [todoText, setTodoText] = useState<Database[]>([]); // 入力テキスト
+  const [todoText, setTodoText] = useState<Database[]>([]); // ToDoリスト一覧
 
-  const fetchSampleData = async () => {
+  // 入力テキスト
+  const onChangeInputText = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(() => event.target.value);
+  };
+
+  // ToDoの追加
+  const onSubmitAddTodo = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (inputText === "") return;
+    addSupabaseData({ text: inputText, isDone: false });
+    setInputText(() => "");
+  };
+
+  // ToDoの削除
+  const onClickRemoveTodo = (id: number) => {
+    const isPublished = window.confirm("本当に削除してもいいですか？この操作は取り消せません。");
+    if (!isPublished) return;
+    removeSupabaseData(id);
+  };
+
+  // リアルタイムデータ更新
+  const fetchRealtimeData = () => {
     try {
-      const { data, error } = await supabase.from(TABLE_NAME).select("*").order("created_at");
-      if (error) throw new Error(error.message);
-
-      setTodoText(data as Database[]); // '{ [x: string]: any; }[] | null'
-
       supabase
         .channel("table_postgres_changes")
         .on(
@@ -27,11 +41,13 @@ export default function Home() {
           },
           (payload) => {
             if (payload.eventType === "DELETE") {
+              console.log("todoText: ", todoText);
               setTodoText((todoText) => todoText.filter((todo) => todo.id !== payload.old.id));
             }
             if (payload.eventType === "INSERT") {
-              const { created_at, id, isDone, lunch } = payload.new;
-              setTodoText((todoText) => [...todoText, { created_at, id, isDone, lunch }]);
+              console.log("todoText: ", todoText);
+              const { created_at, id, isDone, text } = payload.new;
+              setTodoText((todoText) => [...todoText, { created_at, id, isDone, text }]);
             }
           }
         )
@@ -46,28 +62,14 @@ export default function Home() {
     }
   };
 
-  // 入力テキスト
-  const onChangeInputText = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputText(() => event.target.value);
-  };
-
-  // ToDoの追加
-  const onSubmitAddTodo = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (inputText === "") return;
-    updateLunch({ lunch: inputText, isDone: false });
-    setInputText(() => "");
-  };
-
-  // ToDoの削除
-  const onClickRemoveTodo = (id: number) => {
-    const isPublished = window.confirm("本当に削除してもいいですか？この操作は取り消せません。");
-    if (!isPublished) return;
-    removeLunch(id);
-  };
-
   useEffect(() => {
-    fetchSampleData();
+    const todoData = async () => {
+      const todo = await fetchDatabase();
+      setTodoText(todo as Database[]); // '{ [x: string]: any; }[] | null'
+    };
+    todoData();
+    fetchRealtimeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -86,7 +88,7 @@ export default function Home() {
           {todoText.map((item: any) => (
             <li key={item.id}>
               {/* <input type="checkbox" checked={item.isDone} onClick={onClickTodoCheck} /> */}
-              {item.lunch}
+              {item.text}
               <button onClick={() => onClickRemoveTodo(item.id!)}>削除</button>
             </li>
           ))}
