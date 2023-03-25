@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 export type Database = {
   id?: number;
   text: string;
-  created_at?: string;
+  createdAt?: string;
   isDone: boolean;
 };
 

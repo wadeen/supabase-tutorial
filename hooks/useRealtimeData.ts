@@ -24,8 +24,8 @@ export const useRealtimeData = (todoData: Database[]) => {
           }
           if (payload.eventType === "INSERT") {
             console.log("todoText: ", todoTexts);
-            const { created_at, id, isDone, text } = payload.new;
-            setTodoText((todoTexts) => [...todoTexts, { created_at, id, isDone, text }]);
+            const { createdAt, id, isDone, text } = payload.new;
+            setTodoText((todoTexts) => [...todoTexts, { createdAt, id, isDone, text }]);
           }
         }
       )

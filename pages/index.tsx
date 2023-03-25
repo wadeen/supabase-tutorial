@@ -1,12 +1,12 @@
-import TodoList from "@/components/TodoList";
+import TodoItem from "@/components/TodoItem";
+import TodoList from "@/components/TodoItem";
 import supabase, { Database } from "@/lib/supabase";
-import { fetchDatabase, removeSupabaseData, addSupabaseData, TABLE_NAME } from "@/lib/supabaseFunc";
+import { fetchDatabase, removeSupabaseData, addSupabaseData, TABLE_NAME, updateSupabaseData } from "@/lib/supabaseFunc";
 import { useEffect, useState } from "react";
-// import { useRealtimeData } from "@/hooks/useRealtimeData";
 
 export default function Index() {
   const [inputText, setInputText] = useState(""); // 入力テキスト
-  const [todoText, setTodoText] = useState<Database[]>([]); // ToDoリスト一覧
+  const [todoText, setTodoText] = useState<Database[]>([]); // ToDoリストの一覧
 
   // 入力テキスト
   const onChangeInputText = (event: React.ChangeEvent<HTMLInputElement>) => setInputText(() => event.target.value);
@@ -26,6 +26,11 @@ export default function Index() {
     removeSupabaseData(id);
   };
 
+  // ToDoのチェック
+  const onClickTodoCheck = (id: number, isDone: boolean) => {
+    updateSupabaseData(id, isDone);
+  };
+
   // リアルタイムデータ更新
   const fetchRealtimeData = () => {
     try {
@@ -34,17 +39,27 @@ export default function Index() {
         .on(
           "postgres_changes",
           {
-            event: "*", // "INSERT" | "UPDATE" | "DELETE" 条件指定可能
+            event: "*", // "INSERT" | "DELETE" | "UPDATE"  条件指定が可能
             schema: "public",
             table: TABLE_NAME,
           },
           (payload) => {
+            // データ登録
+            if (payload.eventType === "INSERT") {
+              const { createdAt, id, isDone, text } = payload.new;
+              setTodoText((todoText) => [...todoText, { createdAt, id, isDone, text }]);
+            }
+
+            // データ削除
             if (payload.eventType === "DELETE") {
               setTodoText((todoText) => todoText.filter((todo) => todo.id !== payload.old.id));
             }
-            if (payload.eventType === "INSERT") {
-              const { created_at, id, isDone, text } = payload.new;
-              setTodoText((todoText) => [...todoText, { created_at, id, isDone, text }]);
+
+            // データ更新：チェックボックス
+            if (payload.eventType === "UPDATE") {
+              console.log("payload: ", payload);
+              const { createdAt, id, isDone, text } = payload.new;
+              // setTodoText((todoText) => [...todoText, { createdAt, id, isDone, text }]);
             }
           }
         )
@@ -78,7 +93,15 @@ export default function Index() {
       </form>
 
       {/* 表示エリア */}
-      {todoText ? <TodoList onClickRemoveTodo={onClickRemoveTodo} todoText={todoText} /> : <p>Loading...</p>}
+      {todoText ? (
+        <ul>
+          {todoText.map((item: Database) => (
+            <TodoItem key={item.id} onClickRemoveTodo={onClickRemoveTodo} onClickTodoCheck={onClickTodoCheck} item={item} />
+          ))}
+        </ul>
+      ) : (
+        <p>ToDoリストを追加してください📝</p>
+      )}
     </>
   );
 }

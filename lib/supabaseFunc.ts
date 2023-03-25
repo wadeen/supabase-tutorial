@@ -7,7 +7,7 @@ export const TABLE_NAME = "sample";
 // データの取得
 export const fetchDatabase = async () => {
   try {
-    const { data, error } = await supabase.from(TABLE_NAME).select("*").order("created_at");
+    const { data, error } = await supabase.from(TABLE_NAME).select("*").order("createdAt");
     if (error) throw new Error(error.message);
     return data;
   } catch (error) {
@@ -25,9 +25,18 @@ export const addSupabaseData = async ({ id, text, isDone }: Database) => {
 };
 
 // データの削除
-export const removeSupabaseData = async (id: number) => {
+export const removeSupabaseData = async (taskId: number) => {
   try {
-    await supabase.from(TABLE_NAME).delete().match({ id });
+    await supabase.from(TABLE_NAME).delete().match({ taskId });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// アップデート（チェックボックス）
+export const updateSupabaseData = async (taskId: number, newStatus: boolean) => {
+  try {
+    await supabase.from(TABLE_NAME).update({ isDone: newStatus }).match({ id: taskId });
   } catch (error) {
     console.error(error);
   }
