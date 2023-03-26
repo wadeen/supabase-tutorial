@@ -1,5 +1,4 @@
 import TodoItem from "@/components/TodoItem";
-import TodoList from "@/components/TodoItem";
 import supabase, { Database } from "@/lib/supabase";
 import { fetchDatabase, removeSupabaseData, addSupabaseData, TABLE_NAME, updateSupabaseData } from "@/lib/supabaseFunc";
 import { useEffect, useState } from "react";
@@ -15,7 +14,7 @@ export default function Index() {
   const onSubmitAddTodo = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (inputText === "") return;
-    addSupabaseData({ text: inputText, isDone: false });
+    addSupabaseData({ text: inputText, isDone: false }); // DBに追加
     setInputText(() => "");
   };
 
@@ -35,13 +34,13 @@ export default function Index() {
   const fetchRealtimeData = () => {
     try {
       supabase
-        .channel("table_postgres_changes")
+        .channel("table_postgres_changes") // 任意のチャンネル名
         .on(
-          "postgres_changes",
+          "postgres_changes", // ここは固定
           {
             event: "*", // "INSERT" | "DELETE" | "UPDATE"  条件指定が可能
             schema: "public",
-            table: TABLE_NAME,
+            table: TABLE_NAME, // DBのテーブル名
           },
           (payload) => {
             // データ登録
@@ -49,17 +48,9 @@ export default function Index() {
               const { createdAt, id, isDone, text } = payload.new;
               setTodoText((todoText) => [...todoText, { createdAt, id, isDone, text }]);
             }
-
             // データ削除
             if (payload.eventType === "DELETE") {
               setTodoText((todoText) => todoText.filter((todo) => todo.id !== payload.old.id));
-            }
-
-            // データ更新：チェックボックス
-            if (payload.eventType === "UPDATE") {
-              console.log("payload: ", payload);
-              const { createdAt, id, isDone, text } = payload.new;
-              // setTodoText((todoText) => [...todoText, { createdAt, id, isDone, text }]);
             }
           }
         )

@@ -27,7 +27,7 @@ export const addSupabaseData = async ({ id, text, isDone }: Database) => {
 // データの削除
 export const removeSupabaseData = async (taskId: number) => {
   try {
-    await supabase.from(TABLE_NAME).delete().match({ taskId });
+    await supabase.from(TABLE_NAME).delete().match({ id: taskId });
   } catch (error) {
     console.error(error);
   }

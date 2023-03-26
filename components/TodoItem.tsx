@@ -12,7 +12,14 @@ const TodoItem = ({ item, onClickRemoveTodo, onClickTodoCheck }: Props) => {
 
   return (
     <li>
-      <input type="checkbox" checked={isChecked} onChange={(isChecked) => setIsChecked(!isChecked)} onClick={() => onClickTodoCheck(item.id!, isChecked)} />
+      <input
+        type="checkbox"
+        checked={isChecked}
+        onChange={() => {
+          onClickTodoCheck(item.id!, !isChecked);
+          setIsChecked(() => !isChecked);
+        }}
+      />
       {item.text}
       <button onClick={() => onClickRemoveTodo(item.id!)}>削除</button>
     </li>
