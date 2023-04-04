@@ -1,4 +1,4 @@
-import supabase from '@/lib/supabase'
+import supabase from '@/lib/supabasetjs'
 import { useUser } from '@supabase/ui/dist/cjs/components/Auth/UserContext'
 import Link from 'next/link'
 import React from 'react'

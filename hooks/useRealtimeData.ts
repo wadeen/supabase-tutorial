@@ -1,4 +1,4 @@
-import supabase, { Database } from "@/lib/supabase";
+import supabase, { Database } from "@/lib/supabasetjs";
 import { useState, useEffect } from "react";
 // DBのリアルタイム反映
 

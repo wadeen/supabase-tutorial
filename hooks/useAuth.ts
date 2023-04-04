@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 
-import supabase from "@/lib/supabase";
+import supabase from "@/lib/supabasetjs";
 
 const useAuth = () => {
   const router = useRouter();

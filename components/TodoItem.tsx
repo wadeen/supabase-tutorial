@@ -1,4 +1,4 @@
-import { Database } from "@/lib/supabase";
+import { Database } from "@/lib/supabasetjs";
 import { useState } from "react";
 
 type Props = {

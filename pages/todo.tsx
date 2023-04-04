@@ -1,5 +1,5 @@
 import TodoItem from "@/components/TodoItem";
-import supabase, { Database } from "@/lib/supabase";
+import supabase, { Database } from "@/lib/supabasetjs";
 import { fetchDatabase, removeSupabaseData, addSupabaseData, TABLE_NAME, updateSupabaseData } from "@/lib/supabaseFunc";
 import { NextPage } from "next";
 import { useEffect, useState } from "react";
